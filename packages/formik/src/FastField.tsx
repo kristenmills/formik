@@ -14,10 +14,10 @@ import { connect } from './connect';
 
 type $FixMe = any;
 
-export interface FastFieldProps<V = any> {
-  field: FieldInputProps<V>;
+export interface FastFieldProps<V = any, I extends string = string> {
+  field: FieldInputProps<V, I>;
   meta: FieldMetaProps<V>;
-  form: FormikProps<V>; // if ppl want to restrict this for a given form, let them.
+  form: FormikProps<Record<I, V>, unknown>; // if ppl want to restrict this for a given form, let them.
 }
 
 export type FastFieldConfig<T> = FieldConfig & {
@@ -32,19 +32,19 @@ export type FastFieldAttributes<T> = GenericFieldHTMLAttributes &
   FastFieldConfig<T> &
   T;
 
-type FastFieldInnerProps<Values = {}, Props = {}> = FastFieldAttributes<
+type FastFieldInnerProps<Values = {}, Props = {}, Status = unknown> = FastFieldAttributes<
   Props
-> & { formik: FormikContextType<Values> };
+> & { formik: FormikContextType<Values, Status> };
 
 /**
  * Custom Field component for quickly hooking into Formik
  * context and wiring up forms.
  */
-class FastFieldInner<Values = {}, Props = {}> extends React.Component<
-  FastFieldInnerProps<Values, Props>,
+class FastFieldInner<Values = {}, Props = {}, Status = unknown> extends React.Component<
+  FastFieldInnerProps<Values, Props, Status>,
   {}
 > {
-  constructor(props: FastFieldInnerProps<Values, Props>) {
+  constructor(props: FastFieldInnerProps<Values, Props, Status>) {
     super(props);
     const { render, children, component, as: is, name } = props;
     invariant(
@@ -72,7 +72,7 @@ class FastFieldInner<Values = {}, Props = {}> extends React.Component<
     );
   }
 
-  shouldComponentUpdate(props: FastFieldInnerProps<Values, Props>) {
+  shouldComponentUpdate(props: FastFieldInnerProps<Values, Props, Status>) {
     if (this.props.shouldUpdate) {
       return this.props.shouldUpdate(props, this.props);
     } else if (
